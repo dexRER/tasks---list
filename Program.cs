@@ -1,51 +1,75 @@
-﻿// Лень дальше делать код умным и красивым. Будет как будет тогда, все равно никто не посмотрит.
-
-class Program
+﻿class Program
 {
     static void Main()
     {
+        DateTime startTime = DateTime.Now; // Фиксируем время запуска для таймера сессии
+
         bool showMainMenu = true;
         bool showAddMenu = false;
         bool showRemoveMenu = false;
         bool showEditMenu = false;
         bool showListMenu = false;
+        bool showTimerMenu = false;
         bool showStatsMenu = false;
 
-        int largestWordIndex = 0;
-        int spaceBeforeChoiceList = 3;
-        int userMainChoice = 0;
-        int countTasks = 0;
-        int userChoiceLists = 0;
+        int largestWordIndex = 0; // Индекс самого длинного слова для центровки списка
+        int spaceForListUnderTitle = 3; // Отступ списка от верхнего края
+        int userMainChoice = 0; // Выбор пользователя в главном меню
+        int countTasks = 0; // Актуальный счетчик задач (синхронизирован с файлом)
+        int userChoiceLists = 0; // Индекс задачи, выбранной пользователем внутри списков
+        int userDigitForTimer = 0;  // Секунды для обратного отсчета таймера.
+
+
+        // Статистика сессии
         int howTaskCompleted = 0;
         int howTaskAdd = 0;
         int howTaskEdit = 0;
 
+        string fileName = "tasks.txt";
         string[] userTasksList = new string[0];
         string[] userRemovesTasksLog = new string[0];
 
+        string[] logoLines = {
+            "==================== HELLO TASKS ====================",
+            "Hint:  to quit press: 'Q'"
+        };
+
+        string[] choiceLines = {
+            "1. Open tasks list", "2. Add task", "3. Remove task", "4. Edit task", "5. Timer for work",
+            "6. Completed tasks", " ", "Enter your choice: "
+        };
+
+        string[] pageTitle = {
+            "ADD TASKS ====================",      // [0]
+            "LIST OF TASKS ====================",    // [1]
+            "REMOVE TASK ====================",     // [2]
+            "EDIT TASK ====================",       // [3]
+            "STATS ====================",           // [4]
+            "Hint: qm - quit menu",                // [5]
+            "Deleted / completed tasks:",            // [6]
+            "TIMER ===================="           // [7]
+        };
+
+        // --- ПОДГОТОВКА ФАЙЛОВОЙ СИСТЕМЫ ---
+
+        if (!File.Exists(fileName)) // Проверка на наличие файла рядом с exe.
+        {
+            File.Create(fileName).Close(); // Если нету создаем и сразу же закрываем, чтоб можно было менять.
+        }
+
+        userTasksList = File.ReadAllLines(fileName); // Загружаем данные из файла в массив при старте
+        countTasks = userTasksList.Length; // Синхронизируем счетчик с реальным количеством строк в файле
+
         while (showMainMenu)
         {
-            // LOGO
-
             Console.ForegroundColor = ConsoleColor.Blue;
-            string[] logoLines = { "==================== HELLO TASKS ====================",
-            "Hint:  to quit press: 'Q'"};
-
-            // LIST
-
-            string[] choiceLines = { "1. Open tasks list", "2. Add task", "3. Remove task", "4. Edit task",
-            "5. Completed tasks", " ", "Enter your choice: "};
-
-            // USER TASKS LIST
-
             CenterXY(0, logoLines);
 
             Console.WriteLine();
-
-            // LIST OF CHOICES
-
             Console.ForegroundColor = ConsoleColor.Red;
 
+
+            // Логика поиска самого длинного слова для красивой центровки списка выбора
             for (int i = 0; i < choiceLines.Length; i++)
             {
 
@@ -58,47 +82,50 @@ class Program
                 }
             }
 
-            CenterXY(spaceBeforeChoiceList, choiceLines, 1);
+            CenterXY(spaceForListUnderTitle, choiceLines, 1); // Отрисовка меню выбора
 
-            // COORD
+            NumberCheck(Console.ReadLine(), out userMainChoice); // Ввод пользователя и проверка (метод NumberCheck)
 
-            void CenterXY(int yLength, string[] array, int isList = 0)
-            {
-                for (int i = 0; i < array.Length; i++)
-                {
-                    int effectiveWeight = (isList == 1) ? choiceLines[largestWordIndex].Length : array[i].Length;
-
-                    int centerX1 = (Console.WindowWidth / 2) - (effectiveWeight / 2);
-                    int centerY1 = yLength + i;
-
-                    Console.SetCursorPosition(centerX1, centerY1);
-                    Console.Write($"{array[i]}");
-                }
-            }
-
-            // USER ENTER CHECK 
-
-            NumberCheck(Console.ReadLine(), out userMainChoice);
-
-            switch (userMainChoice)
+            switch (userMainChoice) // Навигация по приложению
             {
                 case 1: UserTasksList(); break;
                 case 2: AddTask(); break;
                 case 3: RemoveTask(); break;
                 case 4: EditTask(); break;
-                case 5: Stats(); break;
+                case 5: Timer(); break;
+                case 6: Stats(); break;
                 default:
-                    Console.Clear(); Console.WriteLine("Error #2: We don't have the same option");
-                    Thread.Sleep(1000); Console.Clear(); break;
+                    Console.Clear();
+                    Console.WriteLine("Error #2: We don't have the same option");
+                    Thread.Sleep(1000);
+                    Console.Clear();
+                    break;
             }
         }
 
-        bool NumberCheck(string userEnter, out int outDigit)
-        {   
-            if (userEnter == "q")
+        // --- ЛОКАЛЬНЫЕ МЕТОДЫ (ИНСТРУМЕНТЫ) ---
+
+
+        // Центровка текста в консоли
+        void CenterXY(int yLength, string[] array, int isList = 0)
+        {
+            for (int i = 0; i < array.Length; i++)
             {
-                Environment.Exit(0);
+                // Если это список, центруем по самому длинному элементу, иначе по текущей строке
+                int effectiveWeight = (isList == 1) ? choiceLines[largestWordIndex].Length : array[i].Length;
+
+                int centerX1 = (Console.WindowWidth / 2) - (effectiveWeight / 2);
+                int centerY1 = yLength + i;
+
+                Console.SetCursorPosition(centerX1, centerY1);
+                Console.Write($"{array[i]}");
             }
+        }
+
+        // Универсальная проверка ввода на число и системные команды (q)
+        bool NumberCheck(string userEnter, out int outDigit)
+        {
+            if (userEnter == "q") Environment.Exit(0); // Выход из программы.
 
             if (!int.TryParse(userEnter, out outDigit))
             {
@@ -117,7 +144,7 @@ class Program
             Console.Clear();
         }
 
-        bool AskUserToContinue()
+        bool AskUserToContinue() // Запрос на возврат в меню или продолжение цикла метода
         {
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write("Do you want to continue? (y/n): ");
@@ -136,6 +163,8 @@ class Program
             }
         }
 
+        // --- ЛОГИКА МЕНЮ (РАБОЧИЕ МЕТОДЫ) ---
+
         void AddTask()
         {
             showMainMenu = false;
@@ -147,7 +176,7 @@ class Program
                 string? task;
 
                 Console.Clear();
-                Console.WriteLine("ADD TASKS ====================");
+                Console.WriteLine(pageTitle[0]); // "ADD TASKS"
                 Console.WriteLine();
                 Console.Write("Task: ");
                 task = Console.ReadLine();
@@ -155,22 +184,16 @@ class Program
                 if (task.Length > 1)
                 {
                     countTasks++;
-                    Array.Resize(ref userTasksList, countTasks);
-                    userTasksList[userTasksList.Length - 1] = task;
+                    Array.Resize(ref userTasksList, countTasks); // Расширяем массив
+                    userTasksList[userTasksList.Length - 1] = task; // Кладем в конец
                 }
 
+                File.WriteAllLines(fileName, userTasksList); // Сохраняем в txt
                 howTaskAdd++;
 
                 Console.WriteLine();
 
-                if (!AskUserToContinue())
-                {
-                    showAddMenu = false;
-                }
-                else
-                {
-                    showAddMenu = true;
-                }
+                showAddMenu = AskUserToContinue();
             }
         }
 
@@ -182,13 +205,10 @@ class Program
             {
                 Console.ResetColor();
                 Console.Clear();
-                Console.WriteLine("LIST OF TASKS ====================");
+                Console.WriteLine(pageTitle[1]); // "LIST OF TASKS"
                 Console.WriteLine();
 
-                if (userTasksList.Length == 0)
-                {
-                    Console.WriteLine("You don't have tasks yet");
-                }
+                if (userTasksList.Length == 0) Console.WriteLine("You don't have tasks yet");
 
                 for (int i = 0; i < userTasksList.Length; i++)
                 {
@@ -196,15 +216,7 @@ class Program
                 }
 
                 Console.WriteLine();
-
-                if (!AskUserToContinue())
-                {
-                    showListMenu = false;
-                }
-                else
-                {
-                    showListMenu = true;
-                }
+                showListMenu = AskUserToContinue();
             }
         }
 
@@ -212,12 +224,13 @@ class Program
         {
             showMainMenu = false;
             showRemoveMenu = true;
+
             while (showRemoveMenu == true)
             {
                 Console.ResetColor();
                 Console.Clear();
-                Console.WriteLine("REMOVE TASK ====================");
-                Console.WriteLine("Hint: qm - quit menu");
+                Console.WriteLine(pageTitle[2]); // "REMOVE TASK"
+                Console.WriteLine(pageTitle[5]); // "Hint: qm"
                 Console.WriteLine();
 
                 if (userTasksList.Length == 0)
@@ -225,15 +238,8 @@ class Program
                     Console.WriteLine("You don't have tasks yet");
                     Console.WriteLine();
 
-                    if (!AskUserToContinue())
-                    {
-                        showRemoveMenu = false;
-                        return;
-                    }
-                    else
-                    {
-                        continue;
-                    }
+                    if (!AskUserToContinue()) { showRemoveMenu = false; return; }
+                    else continue;
                 }
 
                 for (int i = 0; i < userTasksList.Length; i++)
@@ -245,41 +251,32 @@ class Program
                 Console.Write("Which one you want to remove: ");
                 string? tempStrToParse = Console.ReadLine();
 
-                if (tempStrToParse == "qm")
+                if (tempStrToParse == "qm") // Выход в меню через команду
                 {
-                    if (!AskUserToContinue())
-                    {
-                        showEditMenu = false;
-                        return;
-                    }
-                    else
-                    {
-                        showEditMenu = true;
-                        continue;
-                    }
+                    Console.WriteLine();
+                    showRemoveMenu = AskUserToContinue();
+                    if (!showRemoveMenu) return; else continue;
                 }
 
-                if (!NumberCheck(Console.ReadLine(), out userChoiceLists))
-                {
-                    continue;
-                }
+                if (!NumberCheck(tempStrToParse, out userChoiceLists)) continue;
 
                 if (userChoiceLists > userTasksList.Length || userChoiceLists <= 0)
                 {
-                    ErrorPrint();
-                    continue;
+                    ErrorPrint(); continue;
                 }
 
+                // Логика сохранения удаленной задачи в лог (Stats)
                 string[] newUserRemovesTasksLog = new string[userRemovesTasksLog.Length + 1];
 
-                for (int i = 0; i < 1; i++)
+                for (int i = 0; i < userRemovesTasksLog.Length; i++)
                 {
-                    newUserRemovesTasksLog[i] = userTasksList[userChoiceLists - 1];
-                    howTaskCompleted++;
+                    newUserRemovesTasksLog[i] = userRemovesTasksLog[i];
                 }
 
+                newUserRemovesTasksLog[newUserRemovesTasksLog.Length - 1] = userTasksList[userChoiceLists - 1];
                 userRemovesTasksLog = newUserRemovesTasksLog;
 
+                // Логика удаления из основного массива (создание уменьшенной копии)
                 string[] newTasksListArray = new string[userTasksList.Length - 1];
 
                 for (int i = 0; i < userChoiceLists - 1; i++)
@@ -293,17 +290,12 @@ class Program
                 }
 
                 userTasksList = newTasksListArray;
+                countTasks = userTasksList.Length; // Обновляем счетчик для Resize
+                File.WriteAllLines(fileName, userTasksList); // Синхронизируем с файлом
+                howTaskCompleted++;
 
                 Console.WriteLine();
-
-                if (!AskUserToContinue())
-                {
-                    showRemoveMenu = false;
-                }
-                else
-                {
-                    showRemoveMenu = true;
-                }
+                showRemoveMenu = AskUserToContinue();
             }
         }
 
@@ -315,24 +307,15 @@ class Program
             {
                 Console.Clear();
                 Console.ResetColor();
-                Console.WriteLine("EDIT TASK ====================");
-                Console.WriteLine("Hint: qm - quit menu");
+                Console.WriteLine(pageTitle[3]); // "EDIT TASK"
+                Console.WriteLine(pageTitle[5]);
                 Console.WriteLine();
 
                 if (userTasksList.Length == 0)
                 {
                     Console.WriteLine("You don't have tasks yet");
-
-                    if (!AskUserToContinue())
-                    {
-                        showEditMenu = false;
-                        return;
-                    }
-                    else
-                    {
-                        showEditMenu = true;
-                        continue;
-                    }
+                    if (!AskUserToContinue()) { showEditMenu = false; return; }
+                    else continue;
                 }
 
                 for (int i = 0; i < userTasksList.Length; i++)
@@ -344,45 +327,58 @@ class Program
                 Console.Write("Choose one from list to edit: ");
                 string? tempStrToParse = Console.ReadLine();
 
-                if(tempStrToParse == "qm")
+                if (tempStrToParse == "qm")
                 {
-                    if (!AskUserToContinue())
-                    {
-                        showEditMenu = false;
-                        return;
-                    }
-                    else
-                    {
-                        showEditMenu = true;
-                        continue;
-                    }
+                    showEditMenu = AskUserToContinue();
+                    if (!showEditMenu) return; else continue;
                 }
 
-                if (!NumberCheck(tempStrToParse, out userChoiceLists))
-                {
-                    continue;
-                }
+                if (!NumberCheck(tempStrToParse, out userChoiceLists)) continue;
 
                 if (userChoiceLists > userTasksList.Length || userChoiceLists <= 0)
                 {
-                    ErrorPrint();
-                    continue;
+                    ErrorPrint(); continue;
                 }
 
                 Console.Write("New text: ");
                 userTasksList[userChoiceLists - 1] = Console.ReadLine();
+
+                File.WriteAllLines(fileName, userTasksList);
                 howTaskEdit++;
 
                 Console.WriteLine();
+                showEditMenu = AskUserToContinue();
+            }
+        }
 
-                if (!AskUserToContinue())
+        void Timer()
+        {
+            showMainMenu = false;
+            showTimerMenu = true;
+
+            while (showTimerMenu == true)
+            {
+                Console.ResetColor();
+                Console.Clear();
+                Console.WriteLine(pageTitle[7]); // "TIMER"
+                Console.WriteLine();
+
+                Console.Write("Enter in seconds to start the timer: ");
+                string? tempStrToParse = Console.ReadLine();
+
+                if (!NumberCheck(tempStrToParse, out userDigitForTimer)) continue;
+
+                if (userDigitForTimer < 0) continue;
+
+                for (int i = userDigitForTimer; i < userDigitForTimer + 1 && i >= 0; i--)
                 {
-                    showEditMenu = false;
+                    Thread.Sleep(1000);
+                    Console.Clear();
+                    Console.WriteLine($"Seconds: {i}");
                 }
-                else
-                {
-                    showEditMenu = true;
-                }
+
+                Console.WriteLine();
+                showTimerMenu = AskUserToContinue();
             }
         }
 
@@ -390,19 +386,19 @@ class Program
         {
             showMainMenu = false;
             showStatsMenu = true;
+
             while (showStatsMenu == true)
             {
+                // Считаем время сессии (текущее время минус время старта)
+                TimeSpan sessionTime = DateTime.Now - startTime;
+
                 Console.ResetColor();
                 Console.Clear();
-                Console.WriteLine("STATS ====================");
-                Console.WriteLine();
-                Console.WriteLine("Deleted / completed tasks:");
+                Console.WriteLine(pageTitle[4]); // "STATS"
+                Console.WriteLine(pageTitle[6]); // "Deleted / completed"
                 Console.WriteLine();
 
-                if (userRemovesTasksLog.Length == 0)
-                {
-                    Console.WriteLine("You don't have tasks yet");
-                }
+                if (userRemovesTasksLog.Length == 0) Console.WriteLine("No history for this session");
 
                 for (int i = 0; i < userRemovesTasksLog.Length; i++)
                 {
@@ -417,16 +413,12 @@ class Program
                 Console.WriteLine($"Edit tasks: {howTaskEdit}");
                 Console.WriteLine($"Completed tasks: {howTaskCompleted}");
 
-                Console.WriteLine();
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine($"Time in session: {sessionTime.Minutes}m {sessionTime.Seconds}s");
+                Console.ResetColor();
 
-                if (!AskUserToContinue())
-                {
-                    showStatsMenu = false;
-                }
-                else
-                {
-                    showStatsMenu = true;
-                }
+                Console.WriteLine();
+                showStatsMenu = AskUserToContinue();
             }
         }
     }
