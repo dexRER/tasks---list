@@ -1,0 +1,15 @@
+C:\Users\ll1on\Documents\GitHub\tasks - list\bin\Debug\net10.0\todo_app.exe
+C:\Users\ll1on\Documents\GitHub\tasks - list\bin\Debug\net10.0\todo_app.deps.json
+C:\Users\ll1on\Documents\GitHub\tasks - list\bin\Debug\net10.0\todo_app.runtimeconfig.json
+C:\Users\ll1on\Documents\GitHub\tasks - list\bin\Debug\net10.0\todo_app.dll
+C:\Users\ll1on\Documents\GitHub\tasks - list\bin\Debug\net10.0\todo_app.pdb
+C:\Users\ll1on\Documents\GitHub\tasks - list\obj\Debug\net10.0\todo_app.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\ll1on\Documents\GitHub\tasks - list\obj\Debug\net10.0\todo_app.AssemblyInfoInputs.cache
+C:\Users\ll1on\Documents\GitHub\tasks - list\obj\Debug\net10.0\todo_app.AssemblyInfo.cs
+C:\Users\ll1on\Documents\GitHub\tasks - list\obj\Debug\net10.0\todo_app.csproj.CoreCompileInputs.cache
+C:\Users\ll1on\Documents\GitHub\tasks - list\obj\Debug\net10.0\todo_app.sourcelink.json
+C:\Users\ll1on\Documents\GitHub\tasks - list\obj\Debug\net10.0\todo_app.dll
+C:\Users\ll1on\Documents\GitHub\tasks - list\obj\Debug\net10.0\refint\todo_app.dll
+C:\Users\ll1on\Documents\GitHub\tasks - list\obj\Debug\net10.0\todo_app.pdb
+C:\Users\ll1on\Documents\GitHub\tasks - list\obj\Debug\net10.0\todo_app.genruntimeconfig.cache
+C:\Users\ll1on\Documents\GitHub\tasks - list\obj\Debug\net10.0\ref\todo_app.dll
