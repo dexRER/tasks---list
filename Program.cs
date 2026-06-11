@@ -1,5 +1,16 @@
 ﻿class Program
 {
+    enum MainOptions : byte
+    {
+        ListOfTasks = 1,
+        AddTasks,
+        RemoveTasks,
+        EditTasks,
+        TimerForWork,
+        DeletedTasks,
+        StatsTasks
+    }
+
     static void Main()
     {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
@@ -7,6 +18,8 @@
 
         DateTime startTime = DateTime.Now; // Фиксируем время запуска для таймера сессии
 
+        MainOptions mainOptions = MainOptions.StatsTasks;
+    
         bool showMainMenu = true;
         bool showAddMenu = false;
         bool showRemoveMenu = false;
@@ -35,7 +48,7 @@
         string[] userRemovesTasksLog = new string[0];
 
         string[] logoLines = {
-      "==================== HELLO TASKS ====================",
+      "==================== HELLO TASKS 0.3 ====================",
       "Hint:  to quit press: 'Q'"
     };
 
@@ -53,7 +66,7 @@
             "Hint: qm - quit menu",                // [5]
             "Deleted / completed tasks:",            // [6]
             "TIMER ===================="           // [7]
-        };
+    };
 
         // --- ПОДГОТОВКА ФАЙЛОВОЙ СИСТЕМЫ ---
 
@@ -99,14 +112,19 @@
 
             NumberCheck(Console.ReadLine(), out userMainChoice); // Ввод пользователя и проверка (метод NumberCheck)
 
-            switch (userMainChoice) // Навигация по приложению
+            if (Enum.IsDefined(typeof(MainOptions), (byte)userMainChoice))
+                mainOptions = (MainOptions)userMainChoice;
+            else
+                ErrorPrint();
+
+            switch (mainOptions) // выбор из списка ( выбор функции ).
             {
-                case 1: UserTasksList(); break;
-                case 2: AddTask(); break;
-                case 3: RemoveTask(); break;
-                case 4: EditTask(); break;
-                case 5: Timer(); break;
-                case 6: Stats(); break;
+                case MainOptions.ListOfTasks : UserTasksList(); break;
+                case MainOptions.AddTasks : AddTask(); break;
+                case MainOptions.RemoveTasks : RemoveTask(); break;
+                case MainOptions.EditTasks : EditTask(); break;
+                case MainOptions.TimerForWork : Timer(); break;
+                case MainOptions.StatsTasks: Stats(); break;
                 default:
                     Console.Clear();
                     Console.WriteLine("Error #2: We don't have the same option");
@@ -285,11 +303,13 @@
                 {
                     newUserRemovesTasksLog[i] = userRemovesTasksLog[i];
                 }
+                                                                                                ///////////////////////////////////////////////////////////////////////////////////
+                // Логика сохранения удаленной задачи в лог (Stats)                     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                countLogRemoveTasks++; // 1. Увеличиваем счетчик удаленных задач      ////////////////////////////////////////////// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!ПРОВЕРИТЬ БЛОК КОДА ОТ ИИ
+                Array.Resize(ref userRemovesTasksLog, countLogRemoveTasks); // 2. Расширяем массив логов на 1 ячейку    //////////////////////////////////////////////////////////////////////////////
+                userRemovesTasksLog[userRemovesTasksLog.Length - 1] = userTasksList[userChoiceLists - 1]; // 3. Кладем удаляемую задачу в самую последнюю ячейку лога   //////////////////
 
-                newUserRemovesTasksLog[newUserRemovesTasksLog.Length - 1] = userTasksList[userChoiceLists - 1];
-                userRemovesTasksLog = newUserRemovesTasksLog;
-                File.WriteAllLines(LogfileName, newUserRemovesTasksLog); // Сохраняем в txt
-                countLogRemoveTasks++;
+                File.WriteAllLines(LogfileName, userRemovesTasksLog); // Сохраняем лог в txt
 
                 // Логика удаления из основного массива (создание уменьшенной копии)
                 string[] newTasksListArray = new string[userTasksList.Length - 1];

@@ -1,0 +1,5 @@
+C:\Users\ll1on\Desktop\todoProject\todo_app.exe
+C:\Users\ll1on\Desktop\todoProject\todo_app.dll
+C:\Users\ll1on\Desktop\todoProject\todo_app.deps.json
+C:\Users\ll1on\Desktop\todoProject\todo_app.runtimeconfig.json
+C:\Users\ll1on\Desktop\todoProject\todo_app.pdb
