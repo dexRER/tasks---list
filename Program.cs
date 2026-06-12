@@ -48,7 +48,7 @@
         string[] userRemovesTasksLog = new string[0];
 
         string[] logoLines = {
-      "==================== HELLO TASKS 0.3 ====================",
+      "==================== HELLO TASKS 0.3.1 ====================",
       "Hint:  to quit press: 'Q'"
     };
 
@@ -303,13 +303,12 @@
                 {
                     newUserRemovesTasksLog[i] = userRemovesTasksLog[i];
                 }
-                                                                                                ///////////////////////////////////////////////////////////////////////////////////
-                // Логика сохранения удаленной задачи в лог (Stats)                     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                countLogRemoveTasks++; // 1. Увеличиваем счетчик удаленных задач      ////////////////////////////////////////////// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!ПРОВЕРИТЬ БЛОК КОДА ОТ ИИ
-                Array.Resize(ref userRemovesTasksLog, countLogRemoveTasks); // 2. Расширяем массив логов на 1 ячейку    //////////////////////////////////////////////////////////////////////////////
-                userRemovesTasksLog[userRemovesTasksLog.Length - 1] = userTasksList[userChoiceLists - 1]; // 3. Кладем удаляемую задачу в самую последнюю ячейку лога   //////////////////
 
-                File.WriteAllLines(LogfileName, userRemovesTasksLog); // Сохраняем лог в txt
+                newUserRemovesTasksLog[newUserRemovesTasksLog.Length - 1] = userTasksList[userChoiceLists - 1];
+                userRemovesTasksLog = newUserRemovesTasksLog;
+
+                File.WriteAllLines(LogfileName, newUserRemovesTasksLog); // Сохраняем в txt
+                countLogRemoveTasks++;
 
                 // Логика удаления из основного массива (создание уменьшенной копии)
                 string[] newTasksListArray = new string[userTasksList.Length - 1];
