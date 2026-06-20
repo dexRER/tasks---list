@@ -110,7 +110,7 @@
 
             CenterXY(spaceForListUnderTitle, choiceLines, 1); // Отрисовка меню выбора
 
-            NumberCheck(Console.ReadLine(), out userMainChoice); // Ввод пользователя и проверка (метод NumberCheck)
+            NumberCheck(Console.ReadLine() ?? "", out userMainChoice); // Ввод пользователя и проверка (метод NumberCheck)
 
             if (Enum.IsDefined(typeof(MainOptions), (byte)userMainChoice))
                 mainOptions = (MainOptions)userMainChoice;
@@ -210,7 +210,7 @@
                 Console.WriteLine(pageTitle[0]); // "ADD TASKS"
                 Console.WriteLine();
                 Console.Write("Task: ");
-                task = Console.ReadLine();
+                task = Console.ReadLine() ?? "";
 
                 if (task.Length > 1)
                 {
@@ -289,7 +289,7 @@
                     if (!showRemoveMenu) return; else continue;
                 }
 
-                if (!NumberCheck(tempStrToParse, out userChoiceLists)) continue;
+                if (!NumberCheck(tempStrToParse ?? "", out userChoiceLists)) continue;
 
                 if (userChoiceLists > userTasksList.Length || userChoiceLists <= 0)
                 {
@@ -367,7 +367,7 @@
                     if (!showEditMenu) return; else continue;
                 }
 
-                if (!NumberCheck(tempStrToParse, out userChoiceLists)) continue;
+                if (!NumberCheck(tempStrToParse ?? "", out userChoiceLists)) continue;
 
                 if (userChoiceLists > userTasksList.Length || userChoiceLists <= 0)
                 {
@@ -375,7 +375,7 @@
                 }
 
                 Console.Write("New text: ");
-                userTasksList[userChoiceLists - 1] = Console.ReadLine();
+                userTasksList[userChoiceLists - 1] = Console.ReadLine() ?? "";
 
                 File.WriteAllLines(ListfileName, userTasksList);
                 howTaskEdit++;
@@ -400,7 +400,7 @@
                 Console.Write("Enter in seconds to start the timer: ");
                 string? tempStrToParse = Console.ReadLine();
 
-                if (!NumberCheck(tempStrToParse, out userDigitForTimer)) continue;
+                if (!NumberCheck(tempStrToParse ?? "", out userDigitForTimer)) continue;
 
                 if (userDigitForTimer < 0) continue;
 
