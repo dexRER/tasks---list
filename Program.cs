@@ -1,4 +1,6 @@
-﻿class Program
+﻿// !test commit by git
+
+class Program
 {
     enum MainOptions : byte
     {
